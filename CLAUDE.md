@@ -1,6 +1,23 @@
-# CLAUDE.md - Technical Notes for LLM Council
+# CLAUDE.md
 
-This file contains technical details, architectural decisions, and important implementation notes for future development sessions.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Development Commands
+
+### Backend Development
+- **Start backend**: `uv run python -m backend.main` (runs on port 8001)
+- **Install dependencies**: `uv sync`
+- **Test OpenRouter API**: No test script exists - create one if needed
+
+### Frontend Development
+- **Start frontend**: `cd frontend && npm run dev` (runs on port 5173)
+- **Install dependencies**: `cd frontend && npm install`
+- **Build frontend**: `cd frontend && npm run build`
+- **Lint frontend**: `cd frontend && npm run lint`
+
+### Full Application
+- **Start both services**: `./start.sh` (starts backend + frontend together)
+- **Access application**: http://localhost:5173
 
 ## Project Overview
 
@@ -23,6 +40,7 @@ LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively
 - Graceful degradation: returns None on failure, continues with successful responses
 
 **`council.py`** - The Core Logic
+- `run_full_council()`: Orchestrates the complete 3-stage process
 - `stage1_collect_responses()`: Parallel queries to all council models
 - `stage2_collect_rankings()`:
   - Anonymizes responses as "Response A, B, C, etc."
@@ -33,6 +51,7 @@ LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively
 - `stage3_synthesize_final()`: Chairman synthesizes from all responses + rankings
 - `parse_ranking_from_text()`: Extracts "FINAL RANKING:" section, handles both numbered lists and plain format
 - `calculate_aggregate_rankings()`: Computes average rank position across all peer evaluations
+- `generate_conversation_title()`: Creates title from first user message
 
 **`storage.py`**
 - JSON-based conversation storage in `data/conversations/`
@@ -42,6 +61,7 @@ LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively
 
 **`main.py`**
 - FastAPI app with CORS enabled for localhost:5173 and localhost:3000
+- Implements both streaming and non-streaming message endpoints
 - POST `/api/conversations/{id}/message` returns metadata in addition to stages
 - Metadata includes: label_to_model mapping and aggregate_rankings
 
@@ -56,6 +76,10 @@ LLM Council is a 3-stage deliberation system where multiple LLMs collaboratively
 - Multiline textarea (3 rows, resizable)
 - Enter to send, Shift+Enter for new line
 - User messages wrapped in markdown-content class for padding
+
+**`components/Sidebar.jsx`**
+- Shows conversation list with titles and timestamps
+- Handles conversation creation and switching
 
 **`components/Stage1.jsx`**
 - Tab view of individual model responses
@@ -117,20 +141,43 @@ All backend modules use relative imports (e.g., `from .config import ...`) not a
 ### Port Configuration
 - Backend: 8001 (changed from 8000 to avoid conflict)
 - Frontend: 5173 (Vite default)
-- Update both `backend/main.py` and `frontend/src/api.js` if changing
+- API base URL in `frontend/src/api.js`: `http://localhost:8001`
+- CORS origins in `backend/main.py`: ["http://localhost:5173", "http://localhost:3000"]
 
 ### Markdown Rendering
 All ReactMarkdown components must be wrapped in `<div className="markdown-content">` for proper spacing. This class is defined globally in `index.css`.
 
 ### Model Configuration
-Models are hardcoded in `backend/config.py`. Chairman can be same or different from council members. The current default is Gemini as chairman per user preference.
+Models are configured in `backend/config.py` with provider prefix format "provider:model". Available providers:
+- **openrouter**: Access to OpenAI, Anthropic, Google, xAI models
+- **qiniu**: Qiniu Cloud AI models like DeepSeek-V3
+
+Chairman can be same or different from council members. The current default is Google Gemini 3.0 Pro via OpenRouter as chairman per user preference.
+
+### Multi-Provider Support
+- Provider routing handled by `backend/provider_router.py`
+- Model identifiers use "provider:model" format
+- Each provider requires separate API key in environment:
+  - `OPENROUTER_API_KEY`
+  - `QINIU_API_KEY`
+
+### API Endpoints
+- `GET /api/conversations`: List all conversations
+- `POST /api/conversations`: Create new conversation
+- `GET /api/conversations/{id}`: Get specific conversation
+- `POST /api/conversations/{id}/message`: Send message (non-streaming)
+- `POST /api/conversations/{id}/message/stream`: Send message with Server-Sent Events streaming
 
 ## Common Gotchas
 
 1. **Module Import Errors**: Always run backend as `python -m backend.main` from project root, not from backend directory
-2. **CORS Issues**: Frontend must match allowed origins in `main.py` CORS middleware
+2. **CORS Issues**: Frontend origin must be in `main.py` CORS allowed origins list
 3. **Ranking Parse Failures**: If models don't follow format, fallback regex extracts any "Response X" patterns in order
-4. **Missing Metadata**: Metadata is ephemeral (not persisted), only available in API responses
+4. **Missing Metadata**: Metadata (label_to_model, aggregate_rankings) is ephemeral (not persisted), only available in API responses
+5. **Port Conflicts**: Backend uses port 8001 (not 8000) to avoid conflicts with other apps
+6. **Environment Variables**: `.env` file must be in project root with all required API keys:
+   - `OPENROUTER_API_KEY` (for OpenRouter models)
+   - `QINIU_API_KEY` (for Qiniu Cloud AI models)
 
 ## Future Enhancement Ideas
 
@@ -143,7 +190,7 @@ Models are hardcoded in `backend/config.py`. Chairman can be same or different f
 
 ## Testing Notes
 
-Use `test_openrouter.py` to verify API connectivity and test different model identifiers before adding to council. The script tests both streaming and non-streaming modes.
+No automated testing is currently set up. To test OpenRouter API connectivity, create a test script similar to `test_openrouter.py` to verify model identifiers and API functionality before adding to council.
 
 ## Data Flow Summary
 

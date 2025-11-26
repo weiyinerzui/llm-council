@@ -32,30 +32,39 @@ npm install
 cd ..
 ```
 
-### 2. Configure API Key
+### 2. Configure API Keys
 
 Create a `.env` file in the project root:
 
 ```bash
 OPENROUTER_API_KEY=sk-or-v1-...
+QINIU_API_KEY=your_qiniu_ai_api_key
 ```
 
-Get your API key at [openrouter.ai](https://openrouter.ai/). Make sure to purchase the credits you need, or sign up for automatic top up.
+- Get OpenRouter API key at [openrouter.ai](https://openrouter.ai/)
+- Get Qiniu Cloud AI API key at [qnaigc.com](https://api.qnaigc.com/)
+- Purchase credits as needed for each provider
 
 ### 3. Configure Models (Optional)
 
 Edit `backend/config.py` to customize the council:
 
 ```python
+# Format: "provider:model" where provider is "openrouter" or "qiniu"
 COUNCIL_MODELS = [
-    "openai/gpt-5.1",
-    "google/gemini-3-pro-preview",
-    "anthropic/claude-sonnet-4.5",
-    "x-ai/grok-4",
+    "openrouter:openai/gpt-5.1",
+    "openrouter:google/gemini-3-pro-preview",
+    "openrouter:anthropic/claude-sonnet-4.5",
+    "openrouter:x-ai/grok-4",
+    "qiniu:deepseek-v3",  # Qiniu Cloud AI model
 ]
 
-CHAIRMAN_MODEL = "google/gemini-3-pro-preview"
+CHAIRMAN_MODEL = "openrouter:google/gemini-3-pro-preview"
 ```
+
+Available providers:
+- **OpenRouter**: Access to many models (GPT, Claude, Gemini, etc.)
+- **Qiniu Cloud AI**: Models like DeepSeek-V3
 
 ## Running the Application
 
