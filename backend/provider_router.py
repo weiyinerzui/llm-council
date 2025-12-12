@@ -3,6 +3,7 @@
 from typing import List, Dict, Any, Optional, Tuple
 from .openrouter import query_model as openrouter_query_model, query_models_parallel as openrouter_query_parallel
 from .qiniu import query_model as qiniu_query_model, query_models_parallel as qiniu_query_parallel
+from .volcengine import query_model as volcengine_query_model, query_models_parallel as volcengine_query_parallel
 
 
 def parse_model_identifier(model_identifier: str) -> Tuple[str, str]:
@@ -45,6 +46,8 @@ async def query_model(
         return await openrouter_query_model(model_name, messages, timeout)
     elif provider == "qiniu":
         return await qiniu_query_model(model_name, messages, timeout)
+    elif provider == "volcengine":
+        return await volcengine_query_model(model_name, messages, timeout)
     else:
         print(f"Unknown provider: {provider}")
         return None
@@ -90,6 +93,14 @@ async def query_models_parallel(
             # Qiniu parallel queries
             model_names = [model_name for _, model_name in model_list]
             provider_responses = await qiniu_query_parallel(model_names, messages)
+            # Map back to full identifiers
+            for (full_id, _), response in zip(model_list, provider_responses.values()):
+                all_responses[full_id] = response
+
+        elif provider == "volcengine":
+            # Volcengine parallel queries
+            model_names = [model_name for _, model_name in model_list]
+            provider_responses = await volcengine_query_parallel(model_names, messages)
             # Map back to full identifiers
             for (full_id, _), response in zip(model_list, provider_responses.values()):
                 all_responses[full_id] = response
