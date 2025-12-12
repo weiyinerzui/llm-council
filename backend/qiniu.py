@@ -26,11 +26,18 @@ async def query_model(
         "Content-Type": "application/json",
     }
 
+    # Smart parameter selection based on model
+    # GPT-5 series requires 'max_completion_tokens' instead of 'max_tokens'
+    if model.startswith("openai/gpt-5") or model.startswith("openai/gpt-4o"):
+        max_token_param = "max_completion_tokens"
+    else:
+        max_token_param = "max_tokens"
+
     payload = {
         "model": model,
         "messages": messages,
         "stream": False,  # Non-streaming for council processing
-        "max_tokens": 4096,
+        max_token_param: 4096,
     }
 
     try:
@@ -50,8 +57,13 @@ async def query_model(
                 'reasoning_details': message.get('reasoning_details')
             }
 
+    except httpx.HTTPStatusError as e:
+        # Log HTTP errors with more detail
+        print(f"Error querying model {model} via Qiniu: HTTP {e.response.status_code}")
+        print(f"Response: {e.response.text[:500]}")
+        return None
     except Exception as e:
-        print(f"Error querying model {model} via Qiniu: {e}")
+        print(f"Error querying model {model} via Qiniu: {type(e).__name__}: {e}")
         return None
 
 

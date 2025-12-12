@@ -20,8 +20,8 @@ COUNCIL_MODELS = [
     # "openrouter:x-ai/grok-4",
     "qiniu:claude-4.5-sonnet",  # Qiniu Cloud AI model
     "qiniu:openai/gpt-5",  # Qiniu Cloud AI model
-    "qiniu:minimax/minimax-m2",  # Qiniu Cloud AI model
-    "qiniu:z-ai/glm-4.6",  # Qiniu Cloud AI model
+    "qiniu:moonshotai/kimi-k2-0905 ",  # Qiniu Cloud AI model
+    "qiniu:deepseek/deepseek-v3.2-251201",  # Qiniu Cloud AI model
 ]
 
 # Chairman model - synthesizes final response
@@ -36,3 +36,4 @@ QINIU_API_URL = "https://api.qnaigc.com/v1/chat/completions"
 
 # Data directory for conversation storage
 DATA_DIR = "data/conversations"
+ 
