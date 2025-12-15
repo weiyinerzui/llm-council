@@ -21,19 +21,20 @@ COUNCIL_MODELS = [
     # "openrouter:google/gemini-3-pro-preview",
     # "openrouter:anthropic/claude-sonnet-4.5",
     # "openrouter:x-ai/grok-4",
-    # "qiniu:claude-4.5-sonnet",  # Qiniu Cloud AI model
-    # "qiniu:openai/gpt-5",  # Qiniu Cloud AI model
-    # "qiniu:moonshotai/kimi-k2-0905 ",  # Qiniu Cloud AI model
-    # "qiniu:deepseek/deepseek-v3.2-251201",  # Qiniu Cloud AI model
+    # "qiniu:claude-4.5-sonnet",  # 七牛云不支持此模型
+    "qiniu:openai/gpt-5",  # Qiniu Cloud AI model
+    # "qiniu:z-ai/glm-4.6",  # Qiniu Cloud AI model (已测试通过)
+    # "qiniu:deepseek/deepseek-v3.2-251201",  # Qiniu Cloud AI model (已测试通过)
+    "qiniu:claude-4.5-sonnet",  # Qiniu Cloud AI model (备用选项)
     "volcengine:deepseek-v3-2-251201",  # Volcengine Ark model
-    "volcengine:doubao-seed-code-preview-251028",  # Volcengine Ark model
+    # "volcengine:doubao-seed-code-preview-251028",  # Volcengine Ark model
     "volcengine:kimi-k2-thinking-251104",  # Volcengine Ark model
-    "volcengine:doubao-seed-1-6-thinking-250715",  # Volcengine Ark model
+    # "volcengine:doubao-seed-1-6-thinking-250715",  # Volcengine Ark model
 ]
 
 # Chairman model - synthesizes final response
 # Format: "provider:model"
-CHAIRMAN_MODEL = "volcengine:kimi-k2-thinking-251104"
+CHAIRMAN_MODEL = "qiniu:claude-4.5-sonnet"  # 使用已测试通过的模型
 
 # OpenRouter API endpoint
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -46,4 +47,3 @@ VOLCENGINE_API_URL = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
 
 # Data directory for conversation storage
 DATA_DIR = "data/conversations"
- 
